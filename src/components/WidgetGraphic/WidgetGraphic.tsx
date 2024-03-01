@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ChoiceGroup } from '@consta/uikit/ChoiceGroup';
 import { ReactECharts } from '../../libs/Echarts/ReactECharts';
 import {
@@ -12,70 +12,79 @@ import {
   WrapperStyled,
 } from './WidgetGraphic.styles';
 import { CURRENCY_LABEL, Currency } from './constants';
-import { mockData } from '../../data/data';
+import { useFetchDataGraphic } from './useFetchDataGraphic';
 
 export function WidgetGraphic() {
   const [currentCurrency, setCurrentCurrency] = useState<Currency>(
     Currency.dollar
   );
-  const mockDataFilteredByCurrency = mockData.filter(
-    (value) => value.indicator === CURRENCY_LABEL[currentCurrency]
-  );
+  const { loading, data, error } = useFetchDataGraphic();
 
-  const xData = mockDataFilteredByCurrency.map(({ month }) => month);
-  const yData = mockDataFilteredByCurrency.map(({ value }) => value);
-  const yDataSorted = yData.concat().sort((a, b) => a - b);
+  const option = useMemo(() => {
+    if (error || loading) return null;
 
-  const option = {
-    xAxis: {
-      type: 'category',
-      data: xData,
-      axisLine: {
-        show: false,
-      },
-      axisTick: {
-        show: false,
-      },
-      axisPointer: {
-        label: {
-          fontWeight: 'bold',
-          formatter: ({ value }: { value: string }) => value + ' год',
+    const mockDataFilteredByCurrency = data.filter(
+      (value) => value.indicator === CURRENCY_LABEL[currentCurrency]
+    );
+    const xData = mockDataFilteredByCurrency.map(({ month }) => month);
+    const yData = mockDataFilteredByCurrency.map(({ value }) => value);
+    const yDataSorted = yData.concat().sort((a, b) => a - b);
+
+    return {
+      xAxis: {
+        type: 'category',
+        data: xData,
+        axisLine: {
+          show: false,
+        },
+        axisTick: {
+          show: false,
+        },
+        axisPointer: {
+          label: {
+            fontWeight: 'bold',
+            formatter: ({ value }: { value: string }) => value + ' год',
+          },
         },
       },
-    },
-    yAxis: {
-      type: 'value',
-      splitLine: {
-        show: true,
-        lineStyle: {
-          type: 'dashed',
+      yAxis: {
+        type: 'value',
+        splitLine: {
+          show: true,
+          lineStyle: {
+            type: 'dashed',
+          },
         },
+        interval: (yDataSorted[yDataSorted.length - 1] - yDataSorted[0]) / 4,
+        min: ({ min }: { min: number }) => min,
+        max: ({ max }: { max: number }) => max,
       },
-      interval: (yDataSorted[yDataSorted.length - 1] - yDataSorted[0]) / 4,
-      min: ({ min }: { min: number }) => min,
-      max: ({ max }: { max: number }) => max,
-    },
-    series: [
-      {
-        data: yData,
-        type: 'line',
-        smooth: 0.1,
-        symbol: 'none',
-        color: 'rgba(243, 139, 0, 1)',
-        name: CURRENCY_LABEL[currentCurrency],
-        lineStyle: {
+      series: [
+        {
+          data: yData,
+          type: 'line',
+          smooth: 0.1,
+          symbol: 'none',
           color: 'rgba(243, 139, 0, 1)',
-          width: 2,
+          name: CURRENCY_LABEL[currentCurrency],
+          lineStyle: {
+            color: 'rgba(243, 139, 0, 1)',
+            width: 2,
+          },
         },
+      ],
+      tooltip: {
+        show: true,
+        trigger: 'axis',
+        valueFormatter: (value: string) => value + currentCurrency,
       },
-    ],
-    tooltip: {
-      show: true,
-      trigger: 'axis',
-      valueFormatter: (value: string) => value + currentCurrency,
-    },
-  };
-  return (
+    };
+  }, [currentCurrency, data, error, loading]);
+
+  if (error) return null;
+  return loading ? (
+    <div>Loading...</div>
+  ) : (
     <GraphicStyled>
       <HeaderStyled>
         <TypographyH3Styled>КУРС ДОЛЛАРА, $/₽</TypographyH3Styled>
