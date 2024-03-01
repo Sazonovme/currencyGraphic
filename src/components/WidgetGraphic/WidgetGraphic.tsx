@@ -14,12 +14,10 @@ import {
 import { CURRENCY_LABEL, Currency } from './constants';
 import { useFetchDataGraphic } from './useFetchDataGraphic';
 
-function getAverage(numbers: [number]) {
+function getAverage(numbers: number[]) {
   const sum = numbers.reduce((acc, number) => acc + number, 0);
-  const length = numbers.length;
-  const res = sum / length;
-  if ((res ^ 0) === res) return res;
-  return res.toFixed(1);
+  const res = sum / numbers.length;
+  return (res ^ 0) === res ? res : res.toFixed(1);
 }
 
 export function WidgetGraphic() {
