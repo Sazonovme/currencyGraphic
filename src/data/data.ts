@@ -1,6 +1,6 @@
 //Данные для приложения
 
-const mockData = [
+export const mockData = [
   {
     date: '2016-02-01',
     month: 'фев 2016',

@@ -11,60 +11,70 @@ import {
   TypographyPStyled,
   WrapperStyled,
 } from './WidgetGraphic.styles';
-import { Currency } from './constants';
-
-const option = {
-  xAxis: {
-    type: 'category',
-    data: ['сен', 'окт', 'нояб', 'дек', 'янв'],
-    axisLine: {
-      show: false,
-    },
-    axisTick: {
-      show: false,
-    },
-    axisPointer: {
-      label: {
-        formatter: ({ value }: { value: string }) => value + ' год',
-      },
-    },
-  },
-  yAxis: {
-    type: 'value',
-    splitLine: {
-      show: true,
-      lineStyle: {
-        type: 'dashed',
-      },
-    },
-    min: ({ min }: { min: number }) => min,
-    max: ({ max }: { max: number }) => max,
-  },
-  series: [
-    {
-      data: ['5', '10', '2', '7', '15'],
-      type: 'line',
-      smooth: 0.1,
-      symbol: 'none',
-      color: 'rgba(243, 139, 0, 1)',
-      name: 'graphic',
-      lineStyle: {
-        color: 'rgba(243, 139, 0, 1)',
-        width: 2,
-      },
-    },
-  ],
-  tooltip: {
-    show: true,
-    trigger: 'axis',
-    valueFormatter: (value: string) => value + ' руб',
-  },
-};
+import { CURRENCY_LABEL, Currency } from './constants';
+import { mockData } from '../../data/data';
 
 export function WidgetGraphic() {
   const [currentCurrency, setCurrentCurrency] = useState<Currency>(
     Currency.dollar
   );
+  const mockDataFilteredByCurrency = mockData.filter(
+    (value) => value.indicator === CURRENCY_LABEL[currentCurrency]
+  );
+
+  const xData = mockDataFilteredByCurrency.map(({ month }) => month);
+  const yData = mockDataFilteredByCurrency.map(({ value }) => value);
+  const yDataSorted = yData.concat().sort((a, b) => a - b);
+
+  const option = {
+    xAxis: {
+      type: 'category',
+      data: xData,
+      axisLine: {
+        show: false,
+      },
+      axisTick: {
+        show: false,
+      },
+      axisPointer: {
+        label: {
+          fontWeight: 'bold',
+          formatter: ({ value }: { value: string }) => value + ' год',
+        },
+      },
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: {
+        show: true,
+        lineStyle: {
+          type: 'dashed',
+        },
+      },
+      interval: (yDataSorted[yDataSorted.length - 1] - yDataSorted[0]) / 4,
+      min: ({ min }: { min: number }) => min,
+      max: ({ max }: { max: number }) => max,
+    },
+    series: [
+      {
+        data: yData,
+        type: 'line',
+        smooth: 0.1,
+        symbol: 'none',
+        color: 'rgba(243, 139, 0, 1)',
+        name: CURRENCY_LABEL[currentCurrency],
+        lineStyle: {
+          color: 'rgba(243, 139, 0, 1)',
+          width: 2,
+        },
+      },
+    ],
+    tooltip: {
+      show: true,
+      trigger: 'axis',
+      valueFormatter: (value: string) => value + currentCurrency,
+    },
+  };
   return (
     <GraphicStyled>
       <HeaderStyled>
