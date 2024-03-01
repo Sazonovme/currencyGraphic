@@ -19,13 +19,11 @@ export interface ReactEChartsProps {
   forceResize?: boolean;
 }
 
-
 export interface ILegendselectchangedParams {
   name: string;
   selected: Record<string, boolean>;
   type: string;
 }
-
 
 export function ReactECharts({
   option,
