@@ -14,13 +14,21 @@ import {
 import { CURRENCY_LABEL, Currency } from './constants';
 import { useFetchDataGraphic } from './useFetchDataGraphic';
 
+function getAverage(numbers: [number]) {
+  const sum = numbers.reduce((acc, number) => acc + number, 0);
+  const length = numbers.length;
+  const res = sum / length;
+  if ((res ^ 0) === res) return res;
+  return res.toFixed(1);
+}
+
 export function WidgetGraphic() {
   const [currentCurrency, setCurrentCurrency] = useState<Currency>(
     Currency.dollar
   );
   const { loading, data, error } = useFetchDataGraphic();
 
-  const option = useMemo(() => {
+  const options = useMemo(() => {
     if (error || loading) return null;
 
     const mockDataFilteredByCurrency = data.filter(
@@ -30,54 +38,59 @@ export function WidgetGraphic() {
     const yData = mockDataFilteredByCurrency.map(({ value }) => value);
     const yDataSorted = yData.concat().sort((a, b) => a - b);
 
+    const avarage = getAverage(yData);
+
     return {
-      xAxis: {
-        type: 'category',
-        data: xData,
-        axisLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        axisPointer: {
-          label: {
-            fontWeight: 'bold',
-            formatter: ({ value }: { value: string }) => value + ' год',
+      option: {
+        xAxis: {
+          type: 'category',
+          data: xData,
+          axisLine: {
+            show: false,
+          },
+          axisTick: {
+            show: false,
+          },
+          axisPointer: {
+            label: {
+              fontWeight: 'bold',
+              formatter: ({ value }: { value: string }) => value + ' год',
+            },
           },
         },
-      },
-      yAxis: {
-        type: 'value',
-        splitLine: {
-          show: true,
-          lineStyle: {
-            type: 'dashed',
+        yAxis: {
+          type: 'value',
+          splitLine: {
+            show: true,
+            lineStyle: {
+              type: 'dashed',
+            },
           },
+          interval: (yDataSorted[yDataSorted.length - 1] - yDataSorted[0]) / 4,
+          min: ({ min }: { min: number }) => min,
+          max: ({ max }: { max: number }) => max,
         },
-        interval: (yDataSorted[yDataSorted.length - 1] - yDataSorted[0]) / 4,
-        min: ({ min }: { min: number }) => min,
-        max: ({ max }: { max: number }) => max,
-      },
-      series: [
-        {
-          data: yData,
-          type: 'line',
-          smooth: 0.1,
-          symbol: 'none',
-          color: 'rgba(243, 139, 0, 1)',
-          name: CURRENCY_LABEL[currentCurrency],
-          lineStyle: {
+        series: [
+          {
+            data: yData,
+            type: 'line',
+            smooth: 0.1,
+            symbol: 'none',
             color: 'rgba(243, 139, 0, 1)',
-            width: 2,
+            name: CURRENCY_LABEL[currentCurrency],
+            lineStyle: {
+              color: 'rgba(243, 139, 0, 1)',
+              width: 2,
+            },
           },
+        ],
+        tooltip: {
+          show: true,
+          trigger: 'axis',
+          valueFormatter: (value: string) => value + currentCurrency,
         },
-      ],
-      tooltip: {
-        show: true,
-        trigger: 'axis',
-        valueFormatter: (value: string) => value + currentCurrency,
       },
+      avarage: avarage,
     };
   }, [currentCurrency, data, error, loading]);
 
@@ -101,13 +114,14 @@ export function WidgetGraphic() {
       </HeaderStyled>
       <MainStyled>
         <ReactECharts
-          option={option}
+          option={options.option}
           style={{ left: -70, top: -20, width: '95%' }}
         />
         <WrapperStyled>
           <TypographyPStyled>Среднее за период</TypographyPStyled>
           <NumCurrencyStyled>
-            26, 2<NameCurrencyStyled> руб</NameCurrencyStyled>
+            {options.avarage}
+            <NameCurrencyStyled> {currentCurrency}</NameCurrencyStyled>
           </NumCurrencyStyled>
         </WrapperStyled>
       </MainStyled>
