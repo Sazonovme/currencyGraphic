@@ -100,7 +100,7 @@ export function WidgetGraphic() {
         />
       </HeaderStyled>
       <MainStyled>
-        <ReactECharts option={option} />
+        <ReactECharts option={option} style={{ left: -70, top: -20 }} />
         <WrapperStyled>
           <TypographyPStyled>Среднее за период</TypographyPStyled>
           <NumCurrencyStyled>
