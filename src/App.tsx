@@ -1,7 +1,12 @@
-import React from 'react';
+import { WidgetGraphic } from './components';
+import { Theme, presetGpnDefault } from '@consta/uikit/Theme';
 
 function App() {
-  return <div>Тут будет приложение.</div>;
+  return (
+    <Theme preset={presetGpnDefault}>
+      <WidgetGraphic />
+    </Theme>
+  );
 }
 
 export default App;
